@@ -1,4 +1,4 @@
-# tennis_ball_detection
+# Tennis Ball Detection
 Detecting tennis balls using OpenCV. A few different scripts for detection using different methods.
 
 ## MEC_hough
