@@ -5,6 +5,7 @@ cap = cv2.VideoCapture(0)
 while(1):
 
     _, frame = cap.read()
+    frame = cv2.resize(frame, (400, 300), interpolation = cv2.INTER_LINEAR) 
     frame=cv2.GaussianBlur(frame, (5,5), 0)
     hsv =cv2.cvtColor(frame, cv2.COLOR_BGR2HLS_FULL)
 
@@ -18,7 +19,7 @@ while(1):
     mask = cv2.erode(mask, kernel, iterations=2)
 
     ret, thresh = cv2.threshold(mask, 200, 255, 0)
-    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    _, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     res = cv2.bitwise_and(frame, frame, mask=mask)
     for c in contours:
         M = cv2.moments(c)
@@ -29,16 +30,18 @@ while(1):
             cY = int(M["m01"] / M["m00"])
         else:
             cX, cY = 0, 0
-        circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, 3, 300, param1=250, param2=40, minRadius=0, maxRadius=0)
+        circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, 5, 300, minRadius=0, maxRadius=0)
+        (x,y),radius =cv2.minEnclosingCircle(c)
+        radius = np.int(radius)
         if circles is None:
             continue
         circles = np.uint8(np.round(circles))
         for i in circles[0, :]:
             areah=np.pi*(i[2])**2
-            areac=M["m00"]
-            print(areah, '\t', areac)
-            if areah<=(areac+100) and areah>=(areac-100):
-                cv2.circle(res, (i[0], i[1]), i[2], (255, 0, 0), 4)
+            areac=np.pi*(radius)**2
+            print(areac, '\t', areah)
+            if areah<=(areac+1200) and areah>=(areac-1200):
+                cv2.circle(res, (cX, cY), i[2], (255, 0, 0), 4)
                 cv2.putText(res, "BALL", (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
                 cv2.circle(res, (cX, cY), 3, (0, 255, 0), -1)
 
